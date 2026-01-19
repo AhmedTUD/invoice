@@ -263,6 +263,49 @@ input:focus, textarea:focus, select:focus {
   color: #111827 !important;
 }
 
+/* Preserve button styling - Don't override colored buttons */
+button[class*="bg-brand"],
+button[class*="bg-blue"],
+button[class*="bg-green"],
+button[class*="bg-red"],
+button[class*="bg-yellow"],
+button[class*="bg-purple"],
+button[class*="bg-gray"] {
+  /* Preserve button colors */
+  background-color: unset !important;
+  color: unset !important;
+}
+
+.bg-brand-600,
+.bg-brand-700,
+.bg-blue-600,
+.bg-blue-700,
+.bg-green-600,
+.bg-green-700,
+.bg-red-600,
+.bg-red-700,
+.bg-yellow-600,
+.bg-yellow-700,
+.bg-purple-600,
+.bg-purple-700,
+.bg-gray-600,
+.bg-gray-700 {
+  /* Preserve button colors */
+  background-color: unset !important;
+}
+
+/* Preserve button text colors */
+button[class*="text-white"],
+.text-white {
+  color: #ffffff !important;
+}
+
+button[class*="text-brand"],
+.text-brand-100 {
+  /* Preserve brand text colors */
+  color: unset !important;
+}
+
 /* Override any system dark mode preferences */
 @media (prefers-color-scheme: dark) {
   html, body {
@@ -292,9 +335,18 @@ input:focus, textarea:focus, select:focus {
     border-color: #e5e7eb !important;
   }
   
-  /* Force all elements to light mode */
-  div, span, p, h1, h2, h3, h4, h5, h6, 
-  button, a, label, table, tr, td, th {
+  /* Force basic elements to light mode but preserve button styling */
+  div:not(button):not([class*="bg-"]), 
+  span:not([class*="bg-"]):not([class*="text-"]), 
+  p, h1, h2, h3, h4, h5, h6, 
+  a:not([class*="bg-"]):not([class*="text-"]), 
+  label, table, tr, td, th {
+    background-color: inherit !important;
+    color: inherit !important;
+  }
+  
+  /* Don't override buttons with specific styling classes */
+  button:not([class*="bg-"]):not([class*="text-"]) {
     background-color: inherit !important;
     color: inherit !important;
   }

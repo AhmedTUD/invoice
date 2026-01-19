@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>FSMI TV & HA By SmartSense</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="نظام تتبع حوافز FSMI TV & HA By SmartSense - تطبيق قوي لتتبع الحوافز والفواتير">
+    <meta name="keywords" content="FSMI, TV, HA, SmartSense, حوافز, فواتير, تتبع">
+    <meta name="author" content="SmartSense">
+    
+    <!-- Mobile Optimization -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="FSMI TV & HA">
+    <meta name="application-name" content="FSMI TV & HA">
+    <meta name="msapplication-TileColor" content="#1565C0">
+    
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#1565C0">
+    <meta name="msapplication-navbutton-color" content="#1565C0">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png">
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    
+    <!-- Stylesheets -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind Config -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Cairo', 'sans-serif'],
+            },
+            colors: {
+              brand: {
+                50: '#f0f9ff',
+                100: '#e0f2fe',
+                500: '#0ea5e9',
+                600: '#0284c7',
+                700: '#0369a1',
+                900: '#0c4a6e',
+              }
+            }
+          },
+        },
+      }
+    </script>
+    
+    <!-- Import Maps -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client?deps=react@18.2.0",
+        "react-dom": "https://esm.sh/react-dom@18.2.0?deps=react@18.2.0",
+        "lucide-react": "https://esm.sh/lucide-react@0.263.1?deps=react@18.2.0",
+        "jszip": "https://esm.sh/jszip@3.10.1",
+        "file-saver": "https://esm.sh/file-saver@2.0.5",
+        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+        "react/": "https://aistudiocdn.com/react@^19.2.0/"
+      }
+    }
+    </script>
+    
+    <!-- ExcelJS Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/index.css">
+    
+    <!-- Critical CSS for PWA -->
+    <style>
+      /* PWA Install Button */
+      .pwa-install-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #1565C0, #2E7D32);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 50px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(21, 101, 192, 0.3);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        font-family: 'Cairo', Arial, sans-serif;
+      }
+      
+      .pwa-install-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(21, 101, 192, 0.4);
+      }
+      
+      .pwa-install-btn.show {
+        display: flex;
+      }
+      
+      /* Responsive improvements */
+      @media (max-width: 768px) {
+        .pwa-install-btn {
+          bottom: 10px;
+          right: 10px;
+          padding: 10px 16px;
+          font-size: 12px;
+        }
+      }
+      
+      /* Offline indicator */
+      .offline-indicator {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: #f44336;
+        color: white;
+        text-align: center;
+        padding: 8px;
+        font-size: 14px;
+        z-index: 1001;
+        transform: translateY(-100%);
+        transition: transform 0.3s ease;
+        font-family: 'Cairo', Arial, sans-serif;
+      }
+      
+      .offline-indicator.show {
+        transform: translateY(0);
+      }
+      
+      /* Loading improvements */
+      .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #1565C0;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 text-gray-900 font-sans antialiased">
+    <!-- Offline Indicator -->
+    <div id="offline-indicator" class="offline-indicator">
+      🌐 لا يوجد اتصال بالإنترنت - يعمل التطبيق في وضع عدم الاتصال
+    </div>
+    
+    <!-- PWA Install Button -->
+    <button id="pwa-install-btn" class="pwa-install-btn">
+      📱 تثبيت التطبيق
+    </button>
+    
+    <!-- App Root -->
+    <div id="root"></div>
+    
+    <!-- Main Script -->
+    <script type="module" src="/index.tsx"></script>
+    
+    <!-- PWA Registration Script -->
+    <script>
+      // Register Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('✅ SW registered: ', registration);
+              
+              // Check for updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // New content available
+                    if (confirm('يتوفر تحديث جديد للتطبيق. هل تريد إعادة التحميل؟')) {
+                      newWorker.postMessage({ type: 'SKIP_WAITING' });
+                      window.location.reload();
+                    }
+                  }
+                });
+              });
+            })
+            .catch((registrationError) => {
+              console.log('❌ SW registration failed: ', registrationError);
+            });
+        });
+      }
+      
+      // PWA Install Prompt
+      let deferredPrompt;
+      const installBtn = document.getElementById('pwa-install-btn');
+      
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.classList.add('show');
+      });
+      
+      installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log(`PWA install outcome: ${outcome}`);
+          deferredPrompt = null;
+          installBtn.classList.remove('show');
+        }
+      });
+      
+      window.addEventListener('appinstalled', () => {
+        console.log('✅ PWA installed successfully');
+        installBtn.classList.remove('show');
+      });
+      
+      // Online/Offline Status
+      const offlineIndicator = document.getElementById('offline-indicator');
+      
+      function updateOnlineStatus() {
+        if (navigator.onLine) {
+          offlineIndicator.classList.remove('show');
+        } else {
+          offlineIndicator.classList.add('show');
+        }
+      }
+      
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+      updateOnlineStatus();
+      
+      // Performance monitoring
+      window.addEventListener('load', () => {
+        if ('performance' in window) {
+          const perfData = performance.getEntriesByType('navigation')[0];
+          console.log(`📊 Page load time: ${perfData.loadEventEnd - perfData.loadEventStart}ms`);
+        }
+      });
+      
+      // Prevent zoom on double tap (iOS)
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', function (event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+          event.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, false);
+    </script>
+  </body>
+</html>

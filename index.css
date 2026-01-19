@@ -179,176 +179,69 @@ textarea:focus-visible {
   }
 }
 
-/* Force Light Mode - Override Dark Mode */
-html, body {
+/* Force Light Mode - Simple and Effective */
+html {
   color-scheme: light !important;
+}
+
+body {
   background-color: #f9fafb !important;
   color: #111827 !important;
 }
 
-/* Override any dark mode styles */
-* {
-  color-scheme: light !important;
-}
-
-/* Ensure all backgrounds stay light */
-.bg-white,
-[class*="bg-white"] {
-  background-color: #ffffff !important;
-}
-
-.bg-gray-50,
-[class*="bg-gray-50"] {
-  background-color: #f9fafb !important;
-}
-
-.bg-gray-100,
-[class*="bg-gray-100"] {
-  background-color: #f3f4f6 !important;
-}
-
-/* Ensure all text stays dark */
-.text-gray-900,
-[class*="text-gray-900"] {
-  color: #111827 !important;
-}
-
-.text-gray-800,
-[class*="text-gray-800"] {
-  color: #1f2937 !important;
-}
-
-.text-gray-700,
-[class*="text-gray-700"] {
-  color: #374151 !important;
-}
-
-.text-gray-600,
-[class*="text-gray-600"] {
-  color: #4b5563 !important;
-}
-
-.text-gray-500,
-[class*="text-gray-500"] {
-  color: #6b7280 !important;
-}
-
-/* Ensure borders stay light */
-.border-gray-200,
-[class*="border-gray-200"] {
-  border-color: #e5e7eb !important;
-}
-
-.border-gray-300,
-[class*="border-gray-300"] {
-  border-color: #d1d5db !important;
-}
-
-/* Force form inputs to stay light */
-input, textarea, select {
-  background-color: #ffffff !important;
-  border-color: #d1d5db !important;
-  color: #111827 !important;
-}
-
-input:focus, textarea:focus, select:focus {
-  background-color: #ffffff !important;
-  border-color: #1565C0 !important;
-  color: #111827 !important;
-}
-
-/* Force modals and cards to stay light */
-.modal, .card, [class*="modal"], [class*="card"] {
-  background-color: #ffffff !important;
-  color: #111827 !important;
-}
-
-/* Preserve button styling - Don't override colored buttons */
-button[class*="bg-brand"],
-button[class*="bg-blue"],
-button[class*="bg-green"],
-button[class*="bg-red"],
-button[class*="bg-yellow"],
-button[class*="bg-purple"],
-button[class*="bg-gray"] {
-  /* Preserve button colors */
-  background-color: unset !important;
-  color: unset !important;
-}
-
-.bg-brand-600,
-.bg-brand-700,
-.bg-blue-600,
-.bg-blue-700,
-.bg-green-600,
-.bg-green-700,
-.bg-red-600,
-.bg-red-700,
-.bg-yellow-600,
-.bg-yellow-700,
-.bg-purple-600,
-.bg-purple-700,
-.bg-gray-600,
-.bg-gray-700 {
-  /* Preserve button colors */
-  background-color: unset !important;
-}
-
-/* Preserve button text colors */
-button[class*="text-white"],
-.text-white {
-  color: #ffffff !important;
-}
-
-button[class*="text-brand"],
-.text-brand-100 {
-  /* Preserve brand text colors */
-  color: unset !important;
-}
-
-/* Override any system dark mode preferences */
+/* Override system dark mode - Simple approach */
 @media (prefers-color-scheme: dark) {
+  /* Force light backgrounds for main containers */
   html, body {
     background-color: #f9fafb !important;
     color: #111827 !important;
   }
   
-  * {
-    color-scheme: light !important;
+  /* Force light backgrounds for content areas */
+  div:not([class*="bg-brand"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-yellow"]):not([class*="bg-purple"]):not([class*="bg-gray-6"]):not([class*="bg-gray-7"]):not([class*="bg-gray-8"]) {
+    background-color: inherit !important;
   }
   
+  /* Force light form inputs */
   input, textarea, select {
     background-color: #ffffff !important;
-    border-color: #d1d5db !important;
     color: #111827 !important;
+    border-color: #d1d5db !important;
   }
   
-  .bg-white {
+  /* Force light cards and modals */
+  [class*="bg-white"] {
     background-color: #ffffff !important;
   }
   
-  .text-gray-900 {
+  /* Force dark text colors */
+  [class*="text-gray-9"] {
     color: #111827 !important;
   }
   
-  .border-gray-200 {
+  [class*="text-gray-8"] {
+    color: #1f2937 !important;
+  }
+  
+  [class*="text-gray-7"] {
+    color: #374151 !important;
+  }
+  
+  [class*="text-gray-6"] {
+    color: #4b5563 !important;
+  }
+  
+  [class*="text-gray-5"] {
+    color: #6b7280 !important;
+  }
+  
+  /* Force light borders */
+  [class*="border-gray-2"] {
     border-color: #e5e7eb !important;
   }
   
-  /* Force basic elements to light mode but preserve button styling */
-  div:not(button):not([class*="bg-"]), 
-  span:not([class*="bg-"]):not([class*="text-"]), 
-  p, h1, h2, h3, h4, h5, h6, 
-  a:not([class*="bg-"]):not([class*="text-"]), 
-  label, table, tr, td, th {
-    background-color: inherit !important;
-    color: inherit !important;
-  }
-  
-  /* Don't override buttons with specific styling classes */
-  button:not([class*="bg-"]):not([class*="text-"]) {
-    background-color: inherit !important;
-    color: inherit !important;
+  [class*="border-gray-3"] {
+    border-color: #d1d5db !important;
   }
 }
 

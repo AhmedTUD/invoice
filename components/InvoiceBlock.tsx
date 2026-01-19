@@ -393,14 +393,15 @@ const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, o
         </div>
       </div>
 
-      {/* Image Modal for Full Preview */}
+      {/* Image Modal for Full Preview - Mobile Optimized */}
       {showImageModal && invoice.filePreviewUrl && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="relative max-w-5xl max-h-full bg-white rounded-lg overflow-hidden shadow-2xl">
-            <div className="flex justify-between items-center p-4 border-b bg-gray-50">
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="relative w-full h-full max-w-6xl bg-white rounded-lg overflow-hidden shadow-2xl flex flex-col">
+            {/* Header */}
+            <div className="flex justify-between items-center p-3 sm:p-4 border-b bg-gray-50 flex-shrink-0">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">معاينة الفاتورة #{index + 1}</h3>
-                <p className="text-sm text-gray-600">اضغط على الصورة للتكبير • استخدم العجلة للتمرير</p>
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800">معاينة الفاتورة #{index + 1}</h3>
+                <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">اضغط على الصورة للتكبير • استخدم العجلة للتمرير</p>
               </div>
               <button 
                 onClick={() => setShowImageModal(false)}
@@ -410,13 +411,13 @@ const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, o
               </button>
             </div>
             
-            <div className="flex">
+            <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
               {/* Image Section */}
-              <div className="flex-1 p-4 max-h-[80vh] overflow-auto bg-gray-100">
+              <div className="flex-1 p-2 sm:p-4 overflow-auto bg-gray-100 flex items-center justify-center">
                 <img 
                   src={invoice.filePreviewUrl} 
                   alt="Full Preview" 
-                  className="max-w-full h-auto cursor-zoom-in mx-auto shadow-lg rounded"
+                  className="max-w-full max-h-full object-contain cursor-zoom-in shadow-lg rounded transition-transform duration-200"
                   onClick={(e) => {
                     const img = e.target as HTMLImageElement;
                     if (img.style.transform === 'scale(1.5)') {
@@ -430,11 +431,11 @@ const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, o
                 />
               </div>
               
-              {/* Helper Panel */}
-              <div className="w-80 p-4 border-l bg-white">
+              {/* Helper Panel - Hidden on mobile, collapsible on tablet */}
+              <div className="hidden lg:block w-80 p-4 border-l bg-white overflow-auto">
                 <h4 className="font-semibold text-gray-800 mb-3">🔍 دليل قراءة الفاتورة</h4>
                 
-                <div className="space-y-4 text-sm">
+                <div className="space-y-3 text-sm">
                   <div className="bg-blue-50 p-3 rounded-lg">
                     <h5 className="font-medium text-blue-800 mb-2">📱 البحث عن الموديل:</h5>
                     <ul className="text-blue-700 space-y-1 text-xs">
@@ -464,24 +465,16 @@ const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, o
                       <li>• راجع البيانات قبل الحفظ</li>
                     </ul>
                   </div>
-                  
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <h5 className="font-medium text-gray-800 mb-2">⚡ اختصارات:</h5>
-                    <ul className="text-gray-600 space-y-1 text-xs">
-                      <li>• ESC: إغلاق النافذة</li>
-                      <li>• Click: تكبير/تصغير</li>
-                      <li>• Scroll: تمرير الصورة</li>
-                    </ul>
-                  </div>
                 </div>
               </div>
             </div>
             
-            <div className="p-4 border-t bg-gray-50 text-center">
-              <div className="flex justify-center gap-4">
+            {/* Footer */}
+            <div className="p-3 sm:p-4 border-t bg-gray-50 flex-shrink-0">
+              <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4">
                 <button
                   onClick={() => setShowImageModal(false)}
-                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors text-sm sm:text-base"
                 >
                   إغلاق المعاينة
                 </button>
@@ -492,10 +485,15 @@ const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, o
                     link.download = invoice.file?.name || 'invoice.jpg';
                     link.click();
                   }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm sm:text-base"
                 >
                   تحميل الصورة
                 </button>
+              </div>
+              
+              {/* Mobile Helper Tips */}
+              <div className="lg:hidden mt-3 p-2 bg-blue-50 rounded text-xs text-blue-700">
+                💡 اضغط على الصورة للتكبير/التصغير • ابحث عن الموديل والتاريخ في الفاتورة
               </div>
             </div>
           </div>

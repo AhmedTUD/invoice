@@ -28,14 +28,14 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
             {!isAdmin ? (
                <button 
                  onClick={(e) => handleNavClick(e, '#/admin')} 
-                 className="flex-1 sm:flex-none text-sm text-brand-100 hover:text-white transition-colors focus:outline-none bg-brand-700 hover:bg-brand-800 px-4 py-2 rounded-lg touch-target"
+                 className="text-xs sm:text-sm text-brand-100 hover:text-white transition-colors focus:outline-none bg-brand-700 hover:bg-brand-800 px-3 py-2 sm:px-4 sm:py-2 rounded-lg touch-target whitespace-nowrap"
                >
                  دخول المشرفين
                </button>
             ) : (
                <button 
                  onClick={(e) => handleNavClick(e, '#/')} 
-                 className="flex-1 sm:flex-none text-sm text-gray-300 hover:text-white transition-colors focus:outline-none bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg touch-target"
+                 className="text-xs sm:text-sm text-gray-300 hover:text-white transition-colors focus:outline-none bg-gray-700 hover:bg-gray-600 px-3 py-2 sm:px-4 sm:py-2 rounded-lg touch-target whitespace-nowrap"
                >
                  العودة للرئيسية
                </button>

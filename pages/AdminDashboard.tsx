@@ -4,7 +4,7 @@ import { JoinedRecord, Model } from '../types';
 import { MockDB } from '../services/mockDb';
 import { AdminService } from '../services/adminService';
 import { ApiService } from '../services/apiService';
-import { Download, Search, Filter, Trash2, RefreshCw, LogOut, FileArchive, FileSpreadsheet, Home, XCircle, Settings, Key, Save, X, Plus, Edit, Package } from 'lucide-react';
+import { Download, Search, Filter, Trash2, RefreshCw, LogOut, FileArchive, FileSpreadsheet, Home, XCircle, Settings, Key, Save, X, Plus, Edit, Package, Eye, ZoomIn } from 'lucide-react';
 import JSZip from 'jszip';
 import saveAs from 'file-saver';
 
@@ -20,6 +20,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
   const [allRecords, setAllRecords] = useState<JoinedRecord[]>([]);
   const [filteredRecords, setFilteredRecords] = useState<JoinedRecord[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Image Preview State
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<{url: string, name: string} | null>(null);
 
   // Filters State
   const [filterName, setFilterName] = useState('');
@@ -1124,11 +1128,47 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
                     {record.fileDataUrl ? (
-                      <img 
-                        src={record.fileDataUrl} 
-                        alt="فاتورة" 
-                        className="h-16 w-16 object-cover rounded border"
-                      />
+                      <div className="flex items-center gap-2">
+                        <img 
+                          src={record.fileDataUrl} 
+                          alt="فاتورة" 
+                          className="h-12 w-12 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => {
+                            setSelectedImage({
+                              url: record.fileDataUrl!,
+                              name: `فاتورة ${record.name} - ${record.model}`
+                            });
+                            setShowImageModal(true);
+                          }}
+                        />
+                        <div className="flex flex-col gap-1">
+                          <button
+                            onClick={() => {
+                              setSelectedImage({
+                                url: record.fileDataUrl!,
+                                name: `فاتورة ${record.name} - ${record.model}`
+                              });
+                              setShowImageModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors"
+                            title="معاينة الصورة"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              const link = document.createElement('a');
+                              link.href = record.fileDataUrl!;
+                              link.download = `فاتورة_${record.name}_${record.model}_${record.salesDate}.jpg`;
+                              link.click();
+                            }}
+                            className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors"
+                            title="تحميل الصورة"
+                          >
+                            <Download size={16} />
+                          </button>
+                        </div>
+                      </div>
                     ) : (
                       <span className="text-gray-400 text-sm">لا توجد صورة</span>
                     )}
@@ -1427,6 +1467,98 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
                   </form>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {showImageModal && selectedImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="relative w-full h-full max-w-6xl bg-white rounded-lg overflow-hidden shadow-2xl flex flex-col">
+            {/* Header */}
+            <div className="flex justify-between items-center p-3 sm:p-4 border-b bg-gray-50 flex-shrink-0">
+              <div>
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800">معاينة الفاتورة</h3>
+                <p className="text-sm text-gray-600">{selectedImage.name}</p>
+              </div>
+              <button 
+                onClick={() => {
+                  setShowImageModal(false);
+                  setSelectedImage(null);
+                }}
+                className="text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-200 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            {/* Image Section */}
+            <div className="flex-1 p-2 sm:p-4 overflow-auto bg-gray-100 flex items-center justify-center">
+              <img 
+                src={selectedImage.url} 
+                alt={selectedImage.name}
+                className="max-w-full max-h-full object-contain cursor-zoom-in shadow-lg rounded transition-transform duration-200"
+                onClick={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  if (img.style.transform === 'scale(1.5)') {
+                    img.style.transform = 'scale(1)';
+                    img.style.cursor = 'zoom-in';
+                  } else {
+                    img.style.transform = 'scale(1.5)';
+                    img.style.cursor = 'zoom-out';
+                  }
+                }}
+              />
+            </div>
+            
+            {/* Footer */}
+            <div className="p-3 sm:p-4 border-t bg-gray-50 flex-shrink-0">
+              <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4">
+                <button
+                  onClick={() => {
+                    setShowImageModal(false);
+                    setSelectedImage(null);
+                  }}
+                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors text-sm sm:text-base flex items-center justify-center gap-2"
+                >
+                  <X size={16} />
+                  إغلاق المعاينة
+                </button>
+                <button
+                  onClick={() => {
+                    const link = document.createElement('a');
+                    link.href = selectedImage.url;
+                    link.download = `${selectedImage.name}.jpg`;
+                    link.click();
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm sm:text-base flex items-center justify-center gap-2"
+                >
+                  <Download size={16} />
+                  تحميل الصورة
+                </button>
+                <button
+                  onClick={() => {
+                    const img = document.querySelector('.fixed img') as HTMLImageElement;
+                    if (img) {
+                      if (img.style.transform === 'scale(1.5)') {
+                        img.style.transform = 'scale(1)';
+                      } else {
+                        img.style.transform = 'scale(1.5)';
+                      }
+                    }
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm sm:text-base flex items-center justify-center gap-2"
+                >
+                  <ZoomIn size={16} />
+                  تكبير/تصغير
+                </button>
+              </div>
+              
+              {/* Mobile Helper Tips */}
+              <div className="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-700 text-center">
+                💡 اضغط على الصورة للتكبير/التصغير • استخدم أزرار التحكم أعلاه
+              </div>
             </div>
           </div>
         </div>

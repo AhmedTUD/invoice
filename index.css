@@ -179,29 +179,124 @@ textarea:focus-visible {
   }
 }
 
-/* Dark mode support */
+/* Force Light Mode - Override Dark Mode */
+html, body {
+  color-scheme: light !important;
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
+/* Override any dark mode styles */
+* {
+  color-scheme: light !important;
+}
+
+/* Ensure all backgrounds stay light */
+.bg-white,
+[class*="bg-white"] {
+  background-color: #ffffff !important;
+}
+
+.bg-gray-50,
+[class*="bg-gray-50"] {
+  background-color: #f9fafb !important;
+}
+
+.bg-gray-100,
+[class*="bg-gray-100"] {
+  background-color: #f3f4f6 !important;
+}
+
+/* Ensure all text stays dark */
+.text-gray-900,
+[class*="text-gray-900"] {
+  color: #111827 !important;
+}
+
+.text-gray-800,
+[class*="text-gray-800"] {
+  color: #1f2937 !important;
+}
+
+.text-gray-700,
+[class*="text-gray-700"] {
+  color: #374151 !important;
+}
+
+.text-gray-600,
+[class*="text-gray-600"] {
+  color: #4b5563 !important;
+}
+
+.text-gray-500,
+[class*="text-gray-500"] {
+  color: #6b7280 !important;
+}
+
+/* Ensure borders stay light */
+.border-gray-200,
+[class*="border-gray-200"] {
+  border-color: #e5e7eb !important;
+}
+
+.border-gray-300,
+[class*="border-gray-300"] {
+  border-color: #d1d5db !important;
+}
+
+/* Force form inputs to stay light */
+input, textarea, select {
+  background-color: #ffffff !important;
+  border-color: #d1d5db !important;
+  color: #111827 !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  background-color: #ffffff !important;
+  border-color: #1565C0 !important;
+  color: #111827 !important;
+}
+
+/* Force modals and cards to stay light */
+.modal, .card, [class*="modal"], [class*="card"] {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+/* Override any system dark mode preferences */
 @media (prefers-color-scheme: dark) {
-  body {
-    background-color: #1f2937;
-    color: #f9fafb;
+  html, body {
+    background-color: #f9fafb !important;
+    color: #111827 !important;
+  }
+  
+  * {
+    color-scheme: light !important;
   }
   
   input, textarea, select {
-    background-color: #374151;
-    border-color: #4b5563;
-    color: #f9fafb;
+    background-color: #ffffff !important;
+    border-color: #d1d5db !important;
+    color: #111827 !important;
   }
   
   .bg-white {
-    background-color: #374151 !important;
+    background-color: #ffffff !important;
   }
   
   .text-gray-900 {
-    color: #f9fafb !important;
+    color: #111827 !important;
   }
   
   .border-gray-200 {
-    border-color: #4b5563 !important;
+    border-color: #e5e7eb !important;
+  }
+  
+  /* Force all elements to light mode */
+  div, span, p, h1, h2, h3, h4, h5, h6, 
+  button, a, label, table, tr, td, th {
+    background-color: inherit !important;
+    color: inherit !important;
   }
 }
 

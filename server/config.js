@@ -10,7 +10,7 @@ export const config = {
   UPLOADS_DIR: './server/uploads',
   
   // الحد الأقصى لحجم الملف (بالبايت)
-  MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
+  MAX_FILE_SIZE: 100 * 1024 * 1024, // 100MB
   
   // أنواع الملفات المسموحة
   ALLOWED_FILE_TYPES: [

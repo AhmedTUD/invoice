@@ -49,5 +49,5 @@ export const ALLOWED_FILE_TYPES = [
   "application/pdf"
 ];
 
-// Reduced to 1MB to prevent localStorage QuotaExceededError in demo
-export const MAX_FILE_SIZE_MB = 1;
+// Increased to 100MB for high-quality invoice images
+export const MAX_FILE_SIZE_MB = 100;

@@ -202,7 +202,7 @@ const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, o
                                 <span>تصوير</span>
                             </button>
                         </div>
-                        <p className="text-xs text-gray-500">JPG, PNG, PDF حتى 10MB</p>
+                        <p className="text-xs text-gray-500">JPG, PNG, PDF حتى 100MB</p>
                     </div>
                 </>
               ) : (

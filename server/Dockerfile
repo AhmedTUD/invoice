@@ -16,10 +16,12 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci --only=production
 
-# Copy source code
-COPY . .
+# Copy source code (exclude data and uploads directories)
+COPY *.js ./
+COPY *.json ./
+COPY config.js ./
 
-# Create necessary directories
+# Create necessary directories (but don't overwrite if they exist)
 RUN mkdir -p uploads data
 
 # Set permissions

@@ -114,60 +114,84 @@ db.serialize(() => {
     }
   );
   
-  // إضافة بيانات تجريبية عند بدء التشغيل
-  db.run(
-    `INSERT OR REPLACE INTO employees (id, email, name, mobile, serial, storeName, storeCode, createdAt, updatedAt) 
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      'test-employee-id',
-      'test@example.com',
-      'موظف تجريبي',
-      '01000000000',
-      'EMP-123',
-      'فرع القاهرة',
-      'CAI-01',
-      new Date().toISOString(),
-      new Date().toISOString()
-    ],
-    function(err) {
-      if (err) {
-        console.error('خطأ في إضافة البيانات التجريبية:', err);
-      } else {
-        console.log('✅ تم إضافة البيانات التجريبية بنجاح');
-      }
+  // إضافة بيانات تجريبية فقط إذا لم تكن موجودة
+  db.get("SELECT COUNT(*) as count FROM employees", (err, row) => {
+    if (err) {
+      console.error('خطأ في فحص البيانات:', err);
+      return;
     }
-  );
-
-  // إضافة موديلات افتراضية
-  const defaultModels = [
-    { id: 'model-1', name: 'RS68AB820B1/MR', category: 'ثلاجات', description: 'ثلاجة سامسونج 820 لتر' },
-    { id: 'model-2', name: 'WW11B944DGB/AS', category: 'غسالات', description: 'غسالة سامسونج 11 كيلو' },
-    { id: 'model-3', name: 'AR12TXHQASINMG', category: 'تكييفات', description: 'تكييف سامسونج 12 وحدة' },
-    { id: 'model-4', name: 'UE55AU7000UXEG', category: 'تلفزيونات', description: 'تلفزيون سامسونج 55 بوصة' },
-    { id: 'model-5', name: 'MS23K3513AS/EG', category: 'ميكروويف', description: 'ميكروويف سامسونج 23 لتر' }
-  ];
-
-  defaultModels.forEach(model => {
-    db.run(
-      `INSERT OR IGNORE INTO models (id, name, category, description, isActive, createdAt, updatedAt) 
-       VALUES (?, ?, ?, ?, 1, ?, ?)`,
-      [
-        model.id,
-        model.name,
-        model.category,
-        model.description,
-        new Date().toISOString(),
-        new Date().toISOString()
-      ],
-      function(err) {
-        if (err) {
-          console.error('خطأ في إضافة الموديل:', model.name, err);
+    
+    // إضافة بيانات تجريبية فقط إذا كانت قاعدة البيانات فارغة
+    if (row.count === 0) {
+      db.run(
+        `INSERT INTO employees (id, email, name, mobile, serial, storeName, storeCode, createdAt, updatedAt) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          'test-employee-id',
+          'test@example.com',
+          'موظف تجريبي',
+          '01000000000',
+          'EMP-123',
+          'فرع القاهرة',
+          'CAI-01',
+          new Date().toISOString(),
+          new Date().toISOString()
+        ],
+        function(err) {
+          if (err) {
+            console.error('خطأ في إضافة البيانات التجريبية:', err);
+          } else {
+            console.log('✅ تم إضافة البيانات التجريبية بنجاح');
+          }
         }
-      }
-    );
+      );
+    } else {
+      console.log('📊 قاعدة البيانات تحتوي على بيانات موجودة، لن يتم إضافة بيانات تجريبية');
+    }
   });
 
-  console.log('✅ تم إضافة الموديلات الافتراضية');
+  // إضافة موديلات افتراضية فقط إذا لم تكن موجودة
+  db.get("SELECT COUNT(*) as count FROM models", (err, row) => {
+    if (err) {
+      console.error('خطأ في فحص الموديلات:', err);
+      return;
+    }
+    
+    // إضافة موديلات افتراضية فقط إذا كانت قاعدة البيانات فارغة من الموديلات
+    if (row.count === 0) {
+      const defaultModels = [
+        { id: 'model-1', name: 'RS68AB820B1/MR', category: 'ثلاجات', description: 'ثلاجة سامسونج 820 لتر' },
+        { id: 'model-2', name: 'WW11B944DGB/AS', category: 'غسالات', description: 'غسالة سامسونج 11 كيلو' },
+        { id: 'model-3', name: 'AR12TXHQASINMG', category: 'تكييفات', description: 'تكييف سامسونج 12 وحدة' },
+        { id: 'model-4', name: 'UE55AU7000UXEG', category: 'تلفزيونات', description: 'تلفزيون سامسونج 55 بوصة' },
+        { id: 'model-5', name: 'MS23K3513AS/EG', category: 'ميكروويف', description: 'ميكروويف سامسونج 23 لتر' }
+      ];
+
+      defaultModels.forEach(model => {
+        db.run(
+          `INSERT INTO models (id, name, category, description, isActive, createdAt, updatedAt) 
+           VALUES (?, ?, ?, ?, 1, ?, ?)`,
+          [
+            model.id,
+            model.name,
+            model.category,
+            model.description,
+            new Date().toISOString(),
+            new Date().toISOString()
+          ],
+          function(err) {
+            if (err) {
+              console.error('خطأ في إضافة الموديل:', model.name, err);
+            }
+          }
+        );
+      });
+
+      console.log('✅ تم إضافة الموديلات الافتراضية');
+    } else {
+      console.log('📋 قاعدة البيانات تحتوي على موديلات موجودة، لن يتم إضافة موديلات افتراضية');
+    }
+  });
 });
 
 export default db;

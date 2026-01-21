@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { InvoiceDraft, Model } from '../types';
 import { ApiService } from '../services/apiService';
 import { MAX_FILE_SIZE_MB, ALLOWED_FILE_TYPES } from '../constants';
-import { Trash2, Upload, AlertCircle, ZoomIn, X, Eye, Camera, Search } from 'lucide-react';
+import { Trash2, Upload, AlertCircle, ZoomIn, X, Eye, Search } from 'lucide-react';
 
 interface InvoiceBlockProps {
   index: number;
@@ -14,8 +14,6 @@ interface InvoiceBlockProps {
 
 const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, onRemove, errors }) => {
   const [showImageModal, setShowImageModal] = useState(false);
-  const [showCameraModal, setShowCameraModal] = useState(false);
-  const [stream, setStream] = useState<MediaStream | null>(null);
   
   // Model search states
   const [modelSearch, setModelSearch] = useState('');
@@ -60,24 +58,14 @@ const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, o
     const handleEsc = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setShowImageModal(false);
-        closeCameraModal();
       }
     };
     
-    if (showImageModal || showCameraModal) {
+    if (showImageModal) {
       document.addEventListener('keydown', handleEsc);
       return () => document.removeEventListener('keydown', handleEsc);
     }
-  }, [showImageModal, showCameraModal]);
-
-  // Clean up camera stream when component unmounts
-  useEffect(() => {
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [stream]);
+  }, [showImageModal]);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -103,57 +91,6 @@ const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, o
       } else {
         onChange(invoice.id, 'filePreviewUrl', undefined);
       }
-    }
-  };
-
-  // Camera functions
-  const openCameraModal = async () => {
-    try {
-      // استخدام الكاميرا الافتراضية بدون تحديد نوع معين
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        } 
-      });
-      
-      setStream(mediaStream);
-      setShowCameraModal(true);
-    } catch (error) {
-      console.error('Error accessing camera:', error);
-      alert('لا يمكن الوصول للكاميرا. تأكد من السماح بالوصول للكاميرا في المتصفح.');
-    }
-  };
-
-  const closeCameraModal = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-    }
-    setShowCameraModal(false);
-  };
-
-  const capturePhoto = () => {
-    const video = document.getElementById(`camera-video-${invoice.id}`) as HTMLVideoElement;
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    
-    if (video && context) {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      context.drawImage(video, 0, 0);
-      
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const file = new File([blob], `invoice-${Date.now()}.jpg`, { type: 'image/jpeg' });
-          onChange(invoice.id, 'file', file);
-          
-          const url = URL.createObjectURL(file);
-          onChange(invoice.id, 'filePreviewUrl', url);
-          
-          closeCameraModal();
-        }
-      }, 'image/jpeg', 0.9);
     }
   };
 
@@ -193,15 +130,6 @@ const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, o
                                 <span>اختر ملف</span>
                                 <input id={`file-upload-${invoice.id}`} name="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" />
                             </label>
-                            
-                            <button
-                                type="button"
-                                onClick={openCameraModal}
-                                className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2"
-                            >
-                                <Camera size={16} />
-                                <span>تصوير</span>
-                            </button>
                         </div>
                         <p className="text-xs text-gray-500">JPG, PNG, PDF حتى 100MB</p>
                     </div>
@@ -495,72 +423,6 @@ const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, o
               {/* Mobile Helper Tips */}
               <div className="lg:hidden mt-3 p-2 bg-blue-50 rounded text-xs text-blue-700">
                 💡 اضغط على الصورة للتكبير/التصغير • ابحث عن الموديل والتاريخ في الفاتورة
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Camera Modal */}
-      {showCameraModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4">
-          <div className="relative max-w-4xl max-h-full bg-white rounded-lg overflow-hidden shadow-2xl">
-            <div className="flex justify-between items-center p-4 border-b bg-gray-50">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">تصوير الفاتورة #{index + 1}</h3>
-                <p className="text-sm text-gray-600">وجه الكاميرا نحو الفاتورة واضغط التقاط</p>
-              </div>
-              <button 
-                onClick={closeCameraModal}
-                className="text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-200 rounded-full transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="p-4 bg-black">
-              <video
-                id={`camera-video-${invoice.id}`}
-                ref={(video) => {
-                  if (video && stream) {
-                    video.srcObject = stream;
-                    video.play();
-                  }
-                }}
-                className="w-full max-w-2xl mx-auto rounded-lg"
-                autoPlay
-                playsInline
-              />
-            </div>
-            
-            <div className="p-4 border-t bg-gray-50">
-              <div className="flex justify-center gap-4 mb-4">
-                <button
-                  onClick={capturePhoto}
-                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center gap-2"
-                >
-                  <Camera size={20} />
-                  التقاط الصورة
-                </button>
-                <button
-                  onClick={closeCameraModal}
-                  className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                >
-                  إلغاء
-                </button>
-              </div>
-              
-              <div className="text-center">
-                <div className="bg-blue-50 p-3 rounded-lg">
-                  <h5 className="font-medium text-blue-800 mb-2">📸 نصائح للتصوير الأمثل:</h5>
-                  <ul className="text-blue-700 space-y-1 text-xs">
-                    <li>• تأكد من وضوح الإضاءة</li>
-                    <li>• ضع الفاتورة على سطح مستوٍ</li>
-                    <li>• تجنب الظلال والانعكاسات</li>
-                    <li>• تأكد من ظهور الفاتورة كاملة</li>
-                    <li>• اجعل النص واضحاً ومقروءاً</li>
-                  </ul>
-                </div>
               </div>
             </div>
           </div>

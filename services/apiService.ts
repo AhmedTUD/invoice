@@ -157,6 +157,39 @@ export class ApiService {
       };
     }
   }
+
+  // حذف الفواتير المفلترة فقط (بدون حذف بيانات الموظفين)
+  static async clearFilteredInvoices(sessionToken: string, filters: {
+    name?: string;
+    serial?: string;
+    store?: string;
+    model?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  }): Promise<{success: boolean, message?: string}> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/invoices/filtered`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sessionToken,
+          filters
+        })
+      });
+      
+      const result = await response.json();
+      return result;
+      
+    } catch (error) {
+      console.error('خطأ في حذف الفواتير المفلترة:', error);
+      return { 
+        success: false, 
+        message: 'خطأ في الاتصال بالخادم' 
+      };
+    }
+  }
   
   // إضافة بيانات تجريبية
   static async generateTestData(): Promise<{success: boolean, message?: string}> {
@@ -292,31 +325,6 @@ export class ApiService {
       
     } catch (error) {
       console.error('خطأ في حذف الموديل:', error);
-      return { 
-        success: false, 
-        message: 'خطأ في الاتصال بالخادم' 
-      };
-    }
-  }
-
-  // حذف فاتورة منفصلة
-  static async deleteSingleInvoice(sessionToken: string, invoiceId: string): Promise<{success: boolean, message?: string}> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/invoices/${invoiceId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          sessionToken
-        })
-      });
-      
-      const result = await response.json();
-      return result;
-      
-    } catch (error) {
-      console.error('خطأ في حذف الفاتورة:', error);
       return { 
         success: false, 
         message: 'خطأ في الاتصال بالخادم' 

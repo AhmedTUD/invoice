@@ -748,32 +748,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
     }
   };
 
-  // حذف فاتورة واحدة فقط (بدون حذف بيانات الموظف)
-  const handleDeleteSingleInvoice = async (record: JoinedRecord) => {
-    if (!confirm(`هل أنت متأكد من حذف فاتورة ${record.model} للموظف ${record.name}؟\n\nملاحظة: سيتم حذف الفاتورة فقط وليس بيانات الموظف.`)) {
-      return;
-    }
-
-    setLoading(true);
-    
-    try {
-      const result = await ApiService.deleteSingleInvoice(sessionToken, record.invoiceId);
-      
-      if (result.success) {
-        alert('تم حذف الفاتورة بنجاح');
-        refreshData(); // إعادة تحميل البيانات
-      } else {
-        alert(result.message || 'فشل في حذف الفاتورة');
-      }
-      
-    } catch (error) {
-      console.error('خطأ في حذف الفاتورة:', error);
-      alert('خطأ في الاتصال بالخادم');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleClearData = async () => {
     // تحديد ما إذا كانت هناك فلاتر مطبقة
     const hasFilters = filterName || filterSerial || filterStore || filterModel || filterDateFrom || filterDateTo;
@@ -838,6 +812,70 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
       } catch (error) {
         console.error('خطأ في حذف البيانات:', error);
         alert('حدث خطأ في حذف البيانات');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // حذف الفواتير المفلترة فقط (بدون حذف بيانات الموظفين)
+  const handleClearInvoicesOnly = async () => {
+    // تحديد ما إذا كانت هناك فلاتر مطبقة
+    const hasFilters = filterName || filterSerial || filterStore || filterModel || filterDateFrom || filterDateTo;
+    const recordsCount = hasFilters ? filteredRecords.length : allRecords.length;
+    
+    // رسالة التأكيد
+    let confirmMessage;
+    if (hasFilters) {
+      confirmMessage = `تحذير: سيتم حذف الفواتير المفلترة فقط (${recordsCount} فاتورة).\n\nالفلاتر المطبقة:\n`;
+      if (filterName) confirmMessage += `- الاسم: ${filterName}\n`;
+      if (filterSerial) confirmMessage += `- الكود: ${filterSerial}\n`;
+      if (filterStore) confirmMessage += `- الفرع: ${filterStore}\n`;
+      if (filterModel) confirmMessage += `- الموديل: ${filterModel}\n`;
+      confirmMessage += `\nملاحظة: بيانات الموظفين ستبقى محفوظة.\n\nهل أنت متأكد من حذف هذه الفواتير؟`;
+    } else {
+      confirmMessage = `تحذير: سيتم حذف جميع الفواتير (${recordsCount} فاتورة).\n\nملاحظة: بيانات الموظفين ستبقى محفوظة.\n\nهل أنت متأكد؟`;
+    }
+
+    if (confirm(confirmMessage)) {
+      setLoading(true);
+      
+      try {
+        // حذف الفواتير المفلترة فقط
+        const result = await ApiService.clearFilteredInvoices(sessionToken, {
+          name: filterName || undefined,
+          serial: filterSerial || undefined,
+          store: filterStore || undefined,
+          model: filterModel || undefined,
+          dateFrom: filterDateFrom || undefined,
+          dateTo: filterDateTo || undefined
+        });
+        
+        if (result.success) {
+          alert(result.message || 'تم حذف الفواتير بنجاح');
+          
+          // إعادة تعيين الفلاتر إذا تم حذف الفواتير المفلترة
+          if (hasFilters) {
+            setFilterName('');
+            setFilterSerial('');
+            setFilterStore('');
+            setFilterModel('');
+            // إعادة تعيين فلاتر التاريخ للشهر الحالي
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            setFilterDateFrom(firstDay.toISOString().split('T')[0]);
+            setFilterDateTo(lastDay.toISOString().split('T')[0]);
+          }
+          
+          // إعادة تحميل البيانات
+          refreshData();
+        } else {
+          alert(result.message || 'حدث خطأ في حذف الفواتير');
+        }
+      } catch (error) {
+        console.error('خطأ في حذف الفواتير:', error);
+        alert('حدث خطأ في حذف الفواتير');
       } finally {
         setLoading(false);
       }
@@ -1038,6 +1076,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
                       : `حذف الكل (${allRecords.length})`
                     }
                  </button>
+
+                 <button onClick={handleClearInvoicesOnly} disabled={loading} className="flex items-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-600 px-4 py-2 rounded text-sm border border-orange-200">
+                    {loading ? <RefreshCw className="animate-spin" size={16} /> : <FileArchive size={16} />}
+                    {(filterName || filterSerial || filterStore || filterModel) 
+                      ? `حذف فواتير فقط (${filteredRecords.length})` 
+                      : `حذف كل الفواتير (${allRecords.length})`
+                    }
+                 </button>
                  
                  <div className="w-px h-8 bg-gray-300 mx-1 hidden lg:block"></div>
 
@@ -1235,7 +1281,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الموديل</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">التاريخ</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الصورة</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -1303,16 +1348,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
                     )}
                   </td>
                   
-                  {/* Delete Action */}
-                  <td className="px-4 py-4 whitespace-nowrap text-center">
-                    <button
-                      onClick={() => handleDeleteSingleInvoice(record)}
-                      className="text-red-600 hover:text-red-800 p-2 rounded hover:bg-red-50 transition-colors"
-                      title="حذف هذه الفاتورة فقط"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
                 </tr>
               ))}
             </tbody>

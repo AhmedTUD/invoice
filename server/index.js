@@ -419,6 +419,17 @@ app.delete('/api/submissions/filtered', (req, res) => {
         queryParams.push(`%${filters.model}%`);
       }
       
+      // فلاتر التاريخ
+      if (filters.dateFrom) {
+        whereConditions.push('i.salesDate >= ?');
+        queryParams.push(filters.dateFrom);
+      }
+      
+      if (filters.dateTo) {
+        whereConditions.push('i.salesDate <= ?');
+        queryParams.push(filters.dateTo);
+      }
+      
       // إذا لم تكن هناك فلاتر، احذف جميع البيانات
       if (whereConditions.length === 0) {
         // استخدام نفس منطق حذف جميع البيانات
@@ -880,6 +891,71 @@ app.put('/api/models/:id', (req, res) => {
                   res.json({ success: true, message: 'تم تحديث الموديل بنجاح' });
                 }
               );
+            }
+          );
+        }
+      );
+    }
+  );
+});
+
+// API لحذف فاتورة واحدة فقط (بدون حذف بيانات الموظف)
+app.delete('/api/invoices/:id', (req, res) => {
+  const { id } = req.params;
+  const { sessionToken } = req.body;
+  
+  // التحقق من الجلسة
+  db.get(
+    'SELECT * FROM admin_sessions WHERE sessionToken = ? AND expiresAt > ?',
+    [sessionToken, new Date().toISOString()],
+    (err, session) => {
+      if (err || !session) {
+        return res.status(401).json({ success: false, message: 'جلسة غير صالحة' });
+      }
+      
+      // الحصول على معلومات الفاتورة قبل الحذف
+      db.get(
+        'SELECT * FROM invoices WHERE id = ?',
+        [id],
+        (err, invoice) => {
+          if (err) {
+            console.error('خطأ في البحث عن الفاتورة:', err);
+            return res.status(500).json({ success: false, message: 'خطأ في البحث عن الفاتورة' });
+          }
+          
+          if (!invoice) {
+            return res.status(404).json({ success: false, message: 'الفاتورة غير موجودة' });
+          }
+          
+          // حذف الفاتورة من قاعدة البيانات
+          db.run(
+            'DELETE FROM invoices WHERE id = ?',
+            [id],
+            function(err) {
+              if (err) {
+                console.error('خطأ في حذف الفاتورة:', err);
+                return res.status(500).json({ success: false, message: 'خطأ في حذف الفاتورة' });
+              }
+              
+              // حذف ملف الصورة
+              if (invoice.filePath) {
+                try {
+                  const fullPath = path.join(uploadsDir, path.basename(invoice.filePath));
+                  if (fs.existsSync(fullPath)) {
+                    fs.unlinkSync(fullPath);
+                    console.log(`🗑️ تم حذف الملف: ${fullPath}`);
+                  }
+                } catch (error) {
+                  console.error('خطأ في حذف الملف:', error);
+                  // لا نوقف العملية إذا فشل حذف الملف
+                }
+              }
+              
+              console.log(`✅ تم حذف الفاتورة: ${invoice.model} - ID: ${id}`);
+              res.json({ 
+                success: true, 
+                message: `تم حذف فاتورة ${invoice.model} بنجاح` 
+              });
             }
           );
         }

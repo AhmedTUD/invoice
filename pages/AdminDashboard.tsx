@@ -30,6 +30,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
   const [filterSerial, setFilterSerial] = useState('');
   const [filterStore, setFilterStore] = useState('');
   const [filterModel, setFilterModel] = useState('');
+  
+  // Date Filters State
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
+  
+  // Initialize with current month on component mount
+  useEffect(() => {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    
+    setFilterDateFrom(firstDay.toISOString().split('T')[0]);
+    setFilterDateTo(lastDay.toISOString().split('T')[0]);
+  }, []);
 
   // Password Change State
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -104,14 +118,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
     if (filterModel) {
         result = result.filter(r => r.model.toLowerCase().includes(filterModel.toLowerCase()));
     }
+    
+    // Date Filters
+    if (filterDateFrom) {
+        result = result.filter(r => r.salesDate >= filterDateFrom);
+    }
+    if (filterDateTo) {
+        result = result.filter(r => r.salesDate <= filterDateTo);
+    }
 
     setFilteredRecords(result);
   };
 
-  // Re-apply filters when inputs change
+  // Re-apply filters when inputs change (including date filters)
   useEffect(() => {
     applyFilters(allRecords);
-  }, [filterName, filterSerial, filterStore, filterModel, allRecords]);
+  }, [filterName, filterSerial, filterStore, filterModel, filterDateFrom, filterDateTo, allRecords]);
 
   // 1. ADVANCED EXCEL EXPORT WITH FIXED IMAGES
   const handleExportExcel = async () => {
@@ -726,9 +748,45 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
     }
   };
 
+  // حذف فاتورة واحدة فقط (بدون حذف بيانات الموظف)
+  const handleDeleteSingleInvoice = async (record: JoinedRecord) => {
+    if (!confirm(`هل أنت متأكد من حذف فاتورة ${record.model} للموظف ${record.name}؟\n\nملاحظة: سيتم حذف الفاتورة فقط وليس بيانات الموظف.`)) {
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/invoices/${record.invoiceId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sessionToken
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('تم حذف الفاتورة بنجاح');
+        refreshData(); // إعادة تحميل البيانات
+      } else {
+        alert(result.message || 'فشل في حذف الفاتورة');
+      }
+      
+    } catch (error) {
+      console.error('خطأ في حذف الفاتورة:', error);
+      alert('خطأ في الاتصال بالخادم');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleClearData = async () => {
     // تحديد ما إذا كانت هناك فلاتر مطبقة
-    const hasFilters = filterName || filterSerial || filterStore || filterModel;
+    const hasFilters = filterName || filterSerial || filterStore || filterModel || filterDateFrom || filterDateTo;
     const recordsCount = hasFilters ? filteredRecords.length : allRecords.length;
     
     // رسالة التأكيد بناءً على وجود فلاتر
@@ -756,7 +814,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
             name: filterName || undefined,
             serial: filterSerial || undefined,
             store: filterStore || undefined,
-            model: filterModel || undefined
+            model: filterModel || undefined,
+            dateFrom: filterDateFrom || undefined,
+            dateTo: filterDateTo || undefined
           });
         } else {
           // حذف جميع البيانات
@@ -772,6 +832,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
             setFilterSerial('');
             setFilterStore('');
             setFilterModel('');
+            // إعادة تعيين فلاتر التاريخ للشهر الحالي
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            setFilterDateFrom(firstDay.toISOString().split('T')[0]);
+            setFilterDateTo(lastDay.toISOString().split('T')[0]);
           }
           
           // إعادة تحميل البيانات
@@ -1093,6 +1159,78 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
                     </datalist>
                 </div>
             </div>
+
+            {/* Date Filters Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="md:col-span-3 mb-2">
+                    <h3 className="text-sm font-semibold text-blue-800 flex items-center gap-2">
+                        📅 فلتر التاريخ
+                        <span className="text-xs text-blue-600 font-normal">(افتراضياً: الشهر الحالي)</span>
+                    </h3>
+                </div>
+                
+                {/* Date From */}
+                <div>
+                    <label className="block text-xs font-medium text-blue-700 mb-1">من تاريخ</label>
+                    <input 
+                        type="date" 
+                        value={filterDateFrom}
+                        onChange={e => setFilterDateFrom(e.target.value)}
+                        className="w-full px-3 py-2 border border-blue-300 rounded bg-white focus:bg-white focus:border-blue-500 transition text-sm"
+                    />
+                </div>
+
+                {/* Date To */}
+                <div>
+                    <label className="block text-xs font-medium text-blue-700 mb-1">إلى تاريخ</label>
+                    <input 
+                        type="date" 
+                        value={filterDateTo}
+                        onChange={e => setFilterDateTo(e.target.value)}
+                        className="w-full px-3 py-2 border border-blue-300 rounded bg-white focus:bg-white focus:border-blue-500 transition text-sm"
+                    />
+                </div>
+
+                {/* Quick Date Filters */}
+                <div>
+                    <label className="block text-xs font-medium text-blue-700 mb-1">فلاتر سريعة</label>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => {
+                                const now = new Date();
+                                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                                setFilterDateFrom(firstDay.toISOString().split('T')[0]);
+                                setFilterDateTo(lastDay.toISOString().split('T')[0]);
+                            }}
+                            className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition"
+                        >
+                            الشهر الحالي
+                        </button>
+                        <button
+                            onClick={() => {
+                                const now = new Date();
+                                const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                                const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
+                                setFilterDateFrom(firstDay.toISOString().split('T')[0]);
+                                setFilterDateTo(lastDay.toISOString().split('T')[0]);
+                            }}
+                            className="px-3 py-1 bg-gray-600 text-white rounded text-xs hover:bg-gray-700 transition"
+                        >
+                            الشهر الماضي
+                        </button>
+                        <button
+                            onClick={() => {
+                                setFilterDateFrom('');
+                                setFilterDateTo('');
+                            }}
+                            className="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition"
+                        >
+                            إلغاء الفلتر
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
       </div>
 
@@ -1107,6 +1245,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الموديل</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">التاريخ</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الصورة</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -1172,6 +1311,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
                     ) : (
                       <span className="text-gray-400 text-sm">لا توجد صورة</span>
                     )}
+                  </td>
+                  
+                  {/* Delete Action */}
+                  <td className="px-4 py-4 whitespace-nowrap text-center">
+                    <button
+                      onClick={() => handleDeleteSingleInvoice(record)}
+                      className="text-red-600 hover:text-red-800 p-2 rounded hover:bg-red-50 transition-colors"
+                      title="حذف هذه الفاتورة فقط"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </td>
                 </tr>
               ))}

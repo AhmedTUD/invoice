@@ -131,6 +131,8 @@ export class ApiService {
     serial?: string;
     store?: string;
     model?: string;
+    dateFrom?: string;
+    dateTo?: string;
   }): Promise<{success: boolean, message?: string}> {
     try {
       const response = await fetch(`${API_BASE_URL}/submissions/filtered`, {

@@ -158,50 +158,6 @@ export class ApiService {
     }
   }
 
-  // حذف الفواتير المفلترة فقط (بدون حذف بيانات الموظفين)
-  static async clearFilteredInvoices(sessionToken: string, filters: {
-    name?: string;
-    serial?: string;
-    store?: string;
-    model?: string;
-    dateFrom?: string;
-    dateTo?: string;
-  }): Promise<{success: boolean, message?: string}> {
-    try {
-      console.log('🌐 إرسال طلب حذف الفواتير إلى:', `${API_BASE_URL}/invoices/filtered`);
-      console.log('📋 البيانات المرسلة:', { sessionToken: sessionToken ? 'موجود' : 'غير موجود', filters });
-      
-      const response = await fetch(`${API_BASE_URL}/invoices/filtered`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          sessionToken,
-          filters
-        })
-      });
-      
-      console.log('📡 حالة الاستجابة:', response.status, response.statusText);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const result = await response.json();
-      console.log('📋 نتيجة الخادم:', result);
-      
-      return result;
-      
-    } catch (error) {
-      console.error('❌ خطأ في حذف الفواتير المفلترة:', error);
-      return { 
-        success: false, 
-        message: `خطأ في الاتصال بالخادم: ${error.message}` 
-      };
-    }
-  }
-  
   // إضافة بيانات تجريبية
   static async generateTestData(): Promise<{success: boolean, message?: string}> {
     try {

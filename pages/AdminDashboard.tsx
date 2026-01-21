@@ -818,76 +818,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
     }
   };
 
-  // حذف الفواتير المفلترة فقط (بدون حذف بيانات الموظفين)
-  const handleClearInvoicesOnly = async () => {
-    // تحديد ما إذا كانت هناك فلاتر مطبقة
-    const hasFilters = filterName || filterSerial || filterStore || filterModel || filterDateFrom || filterDateTo;
-    const recordsCount = hasFilters ? filteredRecords.length : allRecords.length;
-    
-    // رسالة التأكيد
-    let confirmMessage;
-    if (hasFilters) {
-      confirmMessage = `تحذير: سيتم حذف الفواتير المفلترة فقط (${recordsCount} فاتورة).\n\nالفلاتر المطبقة:\n`;
-      if (filterName) confirmMessage += `- الاسم: ${filterName}\n`;
-      if (filterSerial) confirmMessage += `- الكود: ${filterSerial}\n`;
-      if (filterStore) confirmMessage += `- الفرع: ${filterStore}\n`;
-      if (filterModel) confirmMessage += `- الموديل: ${filterModel}\n`;
-      confirmMessage += `\nملاحظة: بيانات الموظفين ستبقى محفوظة.\n\nهل أنت متأكد من حذف هذه الفواتير؟`;
-    } else {
-      confirmMessage = `تحذير: سيتم حذف جميع الفواتير (${recordsCount} فاتورة).\n\nملاحظة: بيانات الموظفين ستبقى محفوظة.\n\nهل أنت متأكد؟`;
-    }
-
-    if (confirm(confirmMessage)) {
-      setLoading(true);
-      
-      try {
-        console.log('🔄 بدء حذف الفواتير المفلترة...');
-        console.log('🔑 Session Token:', sessionToken ? 'موجود' : 'غير موجود');
-        
-        // حذف الفواتير المفلترة فقط
-        const result = await ApiService.clearFilteredInvoices(sessionToken, {
-          name: filterName || undefined,
-          serial: filterSerial || undefined,
-          store: filterStore || undefined,
-          model: filterModel || undefined,
-          dateFrom: filterDateFrom || undefined,
-          dateTo: filterDateTo || undefined
-        });
-        
-        console.log('📋 نتيجة API:', result);
-        
-        if (result.success) {
-          alert(result.message || 'تم حذف الفواتير بنجاح');
-          
-          // إعادة تعيين الفلاتر إذا تم حذف الفواتير المفلترة
-          if (hasFilters) {
-            setFilterName('');
-            setFilterSerial('');
-            setFilterStore('');
-            setFilterModel('');
-            // إعادة تعيين فلاتر التاريخ للشهر الحالي
-            const now = new Date();
-            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-            setFilterDateFrom(firstDay.toISOString().split('T')[0]);
-            setFilterDateTo(lastDay.toISOString().split('T')[0]);
-          }
-          
-          // إعادة تحميل البيانات
-          refreshData();
-        } else {
-          console.error('❌ فشل API:', result.message);
-          alert(`فشل في حذف الفواتير: ${result.message || 'خطأ غير معروف'}`);
-        }
-      } catch (error) {
-        console.error('❌ خطأ في حذف الفواتير:', error);
-        alert(`خطأ في الاتصال بالخادم: ${error.message || 'تأكد من تشغيل الخادم'}`);
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
   const goHome = () => {
       window.location.hash = '#/';
   };
@@ -1080,14 +1010,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
                     {(filterName || filterSerial || filterStore || filterModel) 
                       ? `حذف المفلتر (${filteredRecords.length})` 
                       : `حذف الكل (${allRecords.length})`
-                    }
-                 </button>
-
-                 <button onClick={handleClearInvoicesOnly} disabled={loading} className="flex items-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-600 px-4 py-2 rounded text-sm border border-orange-200">
-                    {loading ? <RefreshCw className="animate-spin" size={16} /> : <FileArchive size={16} />}
-                    {(filterName || filterSerial || filterStore || filterModel) 
-                      ? `حذف فواتير فقط (${filteredRecords.length})` 
-                      : `حذف كل الفواتير (${allRecords.length})`
                     }
                  </button>
                  

@@ -16,7 +16,6 @@ const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, o
   const [showImageModal, setShowImageModal] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
-  const [currentCamera, setCurrentCamera] = useState<'user' | 'environment'>('user'); // الكاميرا الحالية
   
   // Model search states
   const [modelSearch, setModelSearch] = useState('');
@@ -110,30 +109,13 @@ const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, o
   // Camera functions
   const openCameraModal = async () => {
     try {
-      // محاولة فتح الكاميرا الأساسية أولاً، ثم الخلفية كبديل
-      let mediaStream;
-      
-      try {
-        // محاولة الكاميرا الأساسية (الأمامية) أولاً
-        mediaStream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            facingMode: 'user', // الكاميرا الأمامية
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          } 
-        });
-      } catch (frontCameraError) {
-        console.log('الكاميرا الأمامية غير متاحة، جاري المحاولة مع الكاميرا الخلفية...');
-        
-        // إذا فشلت الكاميرا الأمامية، جرب الخلفية
-        mediaStream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            facingMode: 'environment', // الكاميرا الخلفية
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          } 
-        });
-      }
+      // استخدام الكاميرا الافتراضية بدون تحديد نوع معين
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      });
       
       setStream(mediaStream);
       setShowCameraModal(true);
@@ -149,32 +131,6 @@ const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, o
       setStream(null);
     }
     setShowCameraModal(false);
-  };
-
-  // تبديل الكاميرا بين الأمامية والخلفية
-  const switchCamera = async () => {
-    if (stream) {
-      // إيقاف الكاميرا الحالية
-      stream.getTracks().forEach(track => track.stop());
-    }
-
-    try {
-      const newFacingMode = currentCamera === 'user' ? 'environment' : 'user';
-      
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: newFacingMode,
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        } 
-      });
-      
-      setStream(mediaStream);
-      setCurrentCamera(newFacingMode);
-    } catch (error) {
-      console.error('خطأ في تبديل الكاميرا:', error);
-      alert('لا يمكن تبديل الكاميرا. قد تكون الكاميرا الأخرى غير متاحة.');
-    }
   };
 
   const capturePhoto = () => {
@@ -585,14 +541,6 @@ const InvoiceBlock: React.FC<InvoiceBlockProps> = ({ index, invoice, onChange, o
                 >
                   <Camera size={20} />
                   التقاط الصورة
-                </button>
-                <button
-                  onClick={switchCamera}
-                  className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-                  title="تبديل الكاميرا"
-                >
-                  🔄
-                  {currentCamera === 'user' ? 'الكاميرا الخلفية' : 'الكاميرا الأمامية'}
                 </button>
                 <button
                   onClick={closeCameraModal}

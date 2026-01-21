@@ -299,4 +299,29 @@ export class ApiService {
       };
     }
   }
+
+  // تحديث فئات الموديلات (لمرة واحدة)
+  static async updateModelCategories(sessionToken: string): Promise<{success: boolean, message?: string}> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/models/update-categories`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sessionToken
+        })
+      });
+      
+      const result = await response.json();
+      return result;
+      
+    } catch (error) {
+      console.error('خطأ في تحديث فئات الموديلات:', error);
+      return { 
+        success: false, 
+        message: 'خطأ في الاتصال بالخادم' 
+      };
+    }
+  }
 }

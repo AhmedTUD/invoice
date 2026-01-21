@@ -300,11 +300,11 @@ export class ApiService {
     }
   }
 
-  // تحديث فئات الموديلات (لمرة واحدة)
-  static async updateModelCategories(sessionToken: string): Promise<{success: boolean, message?: string}> {
+  // حذف فاتورة منفصلة
+  static async deleteSingleInvoice(sessionToken: string, invoiceId: string): Promise<{success: boolean, message?: string}> {
     try {
-      const response = await fetch(`${API_BASE_URL}/models/update-categories`, {
-        method: 'POST',
+      const response = await fetch(`${API_BASE_URL}/invoices/${invoiceId}`, {
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -317,7 +317,7 @@ export class ApiService {
       return result;
       
     } catch (error) {
-      console.error('خطأ في تحديث فئات الموديلات:', error);
+      console.error('خطأ في حذف الفاتورة:', error);
       return { 
         success: false, 
         message: 'خطأ في الاتصال بالخادم' 

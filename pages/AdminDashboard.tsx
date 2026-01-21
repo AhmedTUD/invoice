@@ -764,17 +764,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
     setLoading(true);
     
     try {
-      const response = await fetch(`/api/invoices/${record.invoiceId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          sessionToken
-        })
-      });
-      
-      const result = await response.json();
+      const result = await ApiService.deleteSingleInvoice(sessionToken, record.invoiceId);
       
       if (result.success) {
         alert('تم حذف الفاتورة بنجاح');
@@ -946,34 +936,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
     });
     setModelError('');
     setModelSuccess('');
-  };
-
-  // تحديث فئات الموديلات الموجودة
-  const handleUpdateCategories = async () => {
-    if (!confirm('هل تريد تحديث فئات الموديلات الموجودة من (ثلاجات، غسالات، تكييفات) إلى (HA، TV)؟\n\nهذا سيساعد في عمل فلتر الفئة بشكل صحيح.')) {
-      return;
-    }
-
-    setModelsLoading(true);
-    setModelError('');
-    setModelSuccess('');
-
-    try {
-      const result = await ApiService.updateModelCategories(sessionToken);
-      
-      if (result.success) {
-        setModelSuccess('تم تحديث فئات الموديلات بنجاح');
-        loadModels(); // إعادة تحميل الموديلات
-        refreshData(); // إعادة تحميل البيانات الرئيسية
-      } else {
-        setModelError(result.message || 'فشل في تحديث الفئات');
-      }
-    } catch (error) {
-      console.error('خطأ في تحديث الفئات:', error);
-      setModelError('خطأ في الاتصال بالخادم');
-    } finally {
-      setModelsLoading(false);
-    }
   };
 
   const openAddModelForm = () => {
@@ -1504,23 +1466,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
                   {/* Header with Add Button */}
                   <div className="flex justify-between items-center mb-4">
                     <p className="text-gray-600">إدارة موديلات المنتجات المتاحة في النظام</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleUpdateCategories}
-                        disabled={modelsLoading}
-                        className="bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-                      >
-                        <RefreshCw size={16} />
-                        تحديث الفئات
-                      </button>
-                      <button
-                        onClick={openAddModelForm}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-                      >
-                        <Plus size={16} />
-                        إضافة موديل جديد
-                      </button>
-                    </div>
+                    <button
+                      onClick={openAddModelForm}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                    >
+                      <Plus size={16} />
+                      إضافة موديل جديد
+                    </button>
                   </div>
 
                   {/* Models List */}

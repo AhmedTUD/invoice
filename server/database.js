@@ -157,40 +157,8 @@ db.serialize(() => {
       return;
     }
     
-    // إضافة موديلات افتراضية فقط إذا كانت قاعدة البيانات فارغة من الموديلات
-    if (row.count === 0) {
-      const defaultModels = [
-        { id: 'model-1', name: 'RS68AB820B1/MR', category: 'HA', description: 'ثلاجة سامسونج 820 لتر' },
-        { id: 'model-2', name: 'WW11B944DGB/AS', category: 'HA', description: 'غسالة سامسونج 11 كيلو' },
-        { id: 'model-3', name: 'AR12TXHQASINMG', category: 'HA', description: 'تكييف سامسونج 12 وحدة' },
-        { id: 'model-4', name: 'UE55AU7000UXEG', category: 'TV', description: 'تلفزيون سامسونج 55 بوصة' },
-        { id: 'model-5', name: 'MS23K3513AS/EG', category: 'HA', description: 'ميكروويف سامسونج 23 لتر' }
-      ];
-
-      defaultModels.forEach(model => {
-        db.run(
-          `INSERT INTO models (id, name, category, description, isActive, createdAt, updatedAt) 
-           VALUES (?, ?, ?, ?, 1, ?, ?)`,
-          [
-            model.id,
-            model.name,
-            model.category,
-            model.description,
-            new Date().toISOString(),
-            new Date().toISOString()
-          ],
-          function(err) {
-            if (err) {
-              console.error('خطأ في إضافة الموديل:', model.name, err);
-            }
-          }
-        );
-      });
-
-      console.log('✅ تم إضافة الموديلات الافتراضية');
-    } else {
-      console.log('📋 قاعدة البيانات تحتوي على موديلات موجودة، لن يتم إضافة موديلات افتراضية');
-    }
+    // لا نضيف موديلات افتراضية - يتم إضافتها من واجهة إدارة الموديلات
+    console.log('📋 جدول الموديلات جاهز للاستخدام');
   });
 });
 

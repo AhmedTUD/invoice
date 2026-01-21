@@ -1057,56 +1057,6 @@ app.get('/api/models/active', (req, res) => {
   );
 });
 
-// API لتحديث فئات الموديلات الموجودة (لمرة واحدة)
-app.post('/api/models/update-categories', (req, res) => {
-  const { sessionToken } = req.body;
-  
-  // التحقق من الجلسة
-  db.get(
-    'SELECT * FROM admin_sessions WHERE sessionToken = ? AND expiresAt > ?',
-    [sessionToken, new Date().toISOString()],
-    (err, session) => {
-      if (err || !session) {
-        return res.status(401).json({ success: false, message: 'جلسة غير صالحة' });
-      }
-      
-      // تحديث الفئات للموديلات الموجودة
-      const updates = [
-        { oldCategory: 'ثلاجات', newCategory: 'HA' },
-        { oldCategory: 'غسالات', newCategory: 'HA' },
-        { oldCategory: 'تكييفات', newCategory: 'HA' },
-        { oldCategory: 'تلفزيونات', newCategory: 'TV' },
-        { oldCategory: 'ميكروويف', newCategory: 'HA' }
-      ];
-      
-      let updatedCount = 0;
-      let totalUpdates = updates.length;
-      
-      updates.forEach(update => {
-        db.run(
-          'UPDATE models SET category = ?, updatedAt = ? WHERE category = ?',
-          [update.newCategory, new Date().toISOString(), update.oldCategory],
-          function(err) {
-            if (err) {
-              console.error('خطأ في تحديث الفئة:', update, err);
-            } else {
-              console.log(`✅ تم تحديث ${this.changes} موديل من ${update.oldCategory} إلى ${update.newCategory}`);
-            }
-            
-            updatedCount++;
-            if (updatedCount === totalUpdates) {
-              res.json({ 
-                success: true, 
-                message: 'تم تحديث فئات الموديلات بنجاح' 
-              });
-            }
-          }
-        );
-      });
-    }
-  );
-});
-
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({ 

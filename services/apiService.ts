@@ -131,7 +131,6 @@ export class ApiService {
     serial?: string;
     store?: string;
     model?: string;
-    category?: string;
     dateFrom?: string;
     dateTo?: string;
   }): Promise<{success: boolean, message?: string}> {

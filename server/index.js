@@ -218,11 +218,9 @@ app.get('/api/submissions', async (req, res) => {
       i.model,
       i.salesDate,
       i.fileName,
-      i.filePath,
-      m.category
+      i.filePath
     FROM submissions s
     LEFT JOIN invoices i ON s.id = i.submissionId
-    LEFT JOIN models m ON i.model = m.name
     ORDER BY s.createdAt DESC
   `;
   
@@ -286,7 +284,6 @@ app.get('/api/submissions', async (req, res) => {
         submissionDate: row.submissionDate,
         invoiceId: row.invoiceId,
         model: row.model,
-        category: row.category, // إضافة الفئة
         salesDate: row.salesDate,
         fileName: row.fileName,
         fileDataUrl: fileDataUrl
@@ -433,12 +430,6 @@ app.delete('/api/submissions/filtered', (req, res) => {
         queryParams.push(filters.dateTo);
       }
       
-      // فلتر الفئة
-      if (filters.category) {
-        whereConditions.push('m.category LIKE ?');
-        queryParams.push(`%${filters.category}%`);
-      }
-      
       // إذا لم تكن هناك فلاتر، احذف جميع البيانات
       if (whereConditions.length === 0) {
         // استخدام نفس منطق حذف جميع البيانات
@@ -487,7 +478,6 @@ app.delete('/api/submissions/filtered', (req, res) => {
         SELECT DISTINCT i.id as invoiceId, i.filePath, s.id as submissionId
         FROM submissions s
         LEFT JOIN invoices i ON s.id = i.submissionId
-        LEFT JOIN models m ON i.model = m.name
         WHERE ${whereClause}
       `;
       

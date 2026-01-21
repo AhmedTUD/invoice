@@ -30,7 +30,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
   const [filterSerial, setFilterSerial] = useState('');
   const [filterStore, setFilterStore] = useState('');
   const [filterModel, setFilterModel] = useState('');
-  const [filterCategory, setFilterCategory] = useState(''); // فلتر الفئة الجديد
   
   // Date Filters State
   const [filterDateFrom, setFilterDateFrom] = useState('');
@@ -97,7 +96,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
   const uniqueSerials = useMemo(() => Array.from(new Set(allRecords.map(r => r.serial))).filter(Boolean).sort(), [allRecords]);
   const uniqueStores = useMemo(() => Array.from(new Set(allRecords.map(r => r.storeName))).filter(Boolean).sort(), [allRecords]);
   const uniqueModels = useMemo(() => Array.from(new Set(allRecords.map(r => r.model))).filter(Boolean).sort(), [allRecords]);
-  const uniqueCategories = useMemo(() => Array.from(new Set(allRecords.map(r => r.category))).filter(Boolean).sort(), [allRecords]);
 
   // Apply Filters
   const applyFilters = (data: JoinedRecord[]) => {
@@ -121,11 +119,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
         result = result.filter(r => r.model.toLowerCase().includes(filterModel.toLowerCase()));
     }
     
-    // فلتر الفئة
-    if (filterCategory) {
-        result = result.filter(r => r.category && r.category.toLowerCase().includes(filterCategory.toLowerCase()));
-    }
-    
     // Date Filters
     if (filterDateFrom) {
         result = result.filter(r => r.salesDate >= filterDateFrom);
@@ -140,7 +133,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
   // Re-apply filters when inputs change (including date filters)
   useEffect(() => {
     applyFilters(allRecords);
-  }, [filterName, filterSerial, filterStore, filterModel, filterCategory, filterDateFrom, filterDateTo, allRecords]);
+  }, [filterName, filterSerial, filterStore, filterModel, filterDateFrom, filterDateTo, allRecords]);
 
   // 1. ADVANCED EXCEL EXPORT WITH FIXED IMAGES
   const handleExportExcel = async () => {
@@ -783,7 +776,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
 
   const handleClearData = async () => {
     // تحديد ما إذا كانت هناك فلاتر مطبقة
-    const hasFilters = filterName || filterSerial || filterStore || filterModel || filterCategory || filterDateFrom || filterDateTo;
+    const hasFilters = filterName || filterSerial || filterStore || filterModel || filterDateFrom || filterDateTo;
     const recordsCount = hasFilters ? filteredRecords.length : allRecords.length;
     
     // رسالة التأكيد بناءً على وجود فلاتر
@@ -812,7 +805,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
             serial: filterSerial || undefined,
             store: filterStore || undefined,
             model: filterModel || undefined,
-            category: filterCategory || undefined,
             dateFrom: filterDateFrom || undefined,
             dateTo: filterDateTo || undefined
           });
@@ -830,7 +822,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
             setFilterSerial('');
             setFilterStore('');
             setFilterModel('');
-            setFilterCategory('');
             // إعادة تعيين فلاتر التاريخ للشهر الحالي
             const now = new Date();
             const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -1157,23 +1148,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
                         {uniqueModels.map((val, i) => <option key={i} value={val} />)}
                     </datalist>
                 </div>
-
-                {/* Category */}
-                <div className="relative">
-                    <Package className="absolute right-3 top-3 text-gray-400" size={18} />
-                    <select 
-                        value={filterCategory}
-                        onChange={e => setFilterCategory(e.target.value)}
-                        className="w-full pr-10 pl-3 py-2 border rounded bg-gray-50 focus:bg-white transition appearance-none"
-                    >
-                        <option value="">جميع الفئات</option>
-                        <option value="TV">TV</option>
-                        <option value="HA">HA</option>
-                        {uniqueCategories.filter(cat => cat !== 'TV' && cat !== 'HA').map((cat, i) => (
-                            <option key={i} value={cat}>{cat}</option>
-                        ))}
-                    </select>
-                </div>
             </div>
 
             {/* Date Filters Row */}
@@ -1259,7 +1233,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الموظف</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الفرع</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الموديل</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الفئة</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">التاريخ</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الصورة</th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
@@ -1278,15 +1251,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                     {record.model}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      record.category === 'TV' ? 'bg-blue-100 text-blue-800' :
-                      record.category === 'HA' ? 'bg-green-100 text-green-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {record.category || 'غير محدد'}
-                    </span>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                     {record.salesDate}

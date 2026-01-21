@@ -39,7 +39,6 @@ export interface JoinedRecord extends BasicData {
   submissionDate: string;
   invoiceId: string;
   model: string;
-  category?: string; // فئة الموديل من جدول models
   salesDate: string;
   fileName: string;
   fileDataUrl: string;

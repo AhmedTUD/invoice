@@ -841,6 +841,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
       setLoading(true);
       
       try {
+        console.log('🔄 بدء حذف الفواتير المفلترة...');
+        console.log('🔑 Session Token:', sessionToken ? 'موجود' : 'غير موجود');
+        
         // حذف الفواتير المفلترة فقط
         const result = await ApiService.clearFilteredInvoices(sessionToken, {
           name: filterName || undefined,
@@ -850,6 +853,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
           dateFrom: filterDateFrom || undefined,
           dateTo: filterDateTo || undefined
         });
+        
+        console.log('📋 نتيجة API:', result);
         
         if (result.success) {
           alert(result.message || 'تم حذف الفواتير بنجاح');
@@ -871,11 +876,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, sessionToken 
           // إعادة تحميل البيانات
           refreshData();
         } else {
-          alert(result.message || 'حدث خطأ في حذف الفواتير');
+          console.error('❌ فشل API:', result.message);
+          alert(`فشل في حذف الفواتير: ${result.message || 'خطأ غير معروف'}`);
         }
       } catch (error) {
-        console.error('خطأ في حذف الفواتير:', error);
-        alert('حدث خطأ في حذف الفواتير');
+        console.error('❌ خطأ في حذف الفواتير:', error);
+        alert(`خطأ في الاتصال بالخادم: ${error.message || 'تأكد من تشغيل الخادم'}`);
       } finally {
         setLoading(false);
       }
